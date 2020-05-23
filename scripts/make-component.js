@@ -6,7 +6,7 @@ const readline = require('readline');
 const rl = readline.createInterface(process.stdin, process.stdout);
 
 // folder with all blocks
-const BLOCKS_DIR = path.join(__dirname, '../components');
+const BLOCKS_DIR = path.join(__dirname, '../src/renderer/components');
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 

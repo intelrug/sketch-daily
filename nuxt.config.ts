@@ -1,5 +1,9 @@
 export default {
   mode: 'universal',
+  dev: process.env.NODE_ENV === 'development',
+  buildDir: 'dist/.nuxt',
+  generate: { dir: 'dist/renderer' },
+  srcDir: 'src/renderer',
   server: {
     port: 3000,
     host: '0.0.0.0',
@@ -109,6 +113,9 @@ export default {
           loader: 'eslint-loader',
           exclude: /(node_modules)/,
         });
+      }
+      if (ctx.isClient) {
+        config.target = 'electron-renderer';
       }
     },
   },
