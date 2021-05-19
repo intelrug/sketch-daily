@@ -1,0 +1,33 @@
+.app-header
+	display flex
+	height 22px
+
+	&__draggable
+		flex-grow 1
+		margin-top 4px
+		-webkit-app-region drag
+
+	&__controls
+		display flex
+
+	&__button
+		display inline-block
+		width 28px
+		height 22px
+		margin 0
+		padding 5px
+		color #b9bbbe
+		cursor pointer
+		background transparent
+		border none
+		outline none
+		transition all .1s ease
+
+		&:hover
+			color #ffffff
+			background rgba(79, 84, 92, .24)
+
+		&_type
+			&_warning
+				&:hover
+					background #f04747

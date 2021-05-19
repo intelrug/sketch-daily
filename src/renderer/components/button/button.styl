@@ -1,0 +1,56 @@
+.button
+	display inline-block
+	height 32px
+	padding 4px 16px
+	color #ffffff
+	font-size 15px
+	line-height 24px
+	text-align center
+	cursor pointer
+	background #404040
+	border none
+	border-radius 4px
+	outline none
+	transition all .1s ease
+
+	&:hover
+		background darken(#404040, 20%)
+
+	&:active
+		background darken(#404040, 30%)
+
+	&:disabled
+		color #404040
+		cursor not-allowed
+		background #303030
+
+	&_width
+		&_full
+			width 100%
+			margin 0
+
+	&_color
+		&_red
+			background #ef5350
+
+			&:not(:disabled)
+				&:hover
+					background darken(#ef5350, 5%)
+
+				&:active
+					background darken(#ef5350, 10%)
+
+		&_green
+			background #4fb75c
+
+			&:not(:disabled)
+				&:hover
+					background darken(#4fb75c, 5%)
+
+				&:active
+					background darken(#4fb75c, 10%)
+
+	&__icon
+		width 24px
+		height 24px
+		fill currentColor

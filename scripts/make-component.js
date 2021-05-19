@@ -132,9 +132,7 @@ function initMakeBlock(candidateBlockName) {
       .then((files) => {
         const line = '-'.repeat(48 + blockName.length);
         console.log(line);
-        console.log(
-          `The block has just been created in 'components/${blockName}'`,
-        );
+        console.log(`The block has just been created in 'components/${blockName}'`);
         console.log(line);
 
         // Displays a list of files created

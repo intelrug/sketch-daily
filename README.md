@@ -1,6 +1,4 @@
-# sketch.intelrug.ru
-
-> Sketch
+# InSketch
 
 ## Build Setup
 

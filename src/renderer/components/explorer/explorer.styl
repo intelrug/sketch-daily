@@ -1,0 +1,81 @@
+.explorer
+	display block
+
+	&__controls
+		display flex
+
+	&__controls-spacer
+		flex-grow 1
+
+	&__button
+		display flex
+		align-items center
+		margin 0
+		padding 8px 16px
+		color #ffffff
+		cursor pointer
+		background rgba(255, 255, 255, .05)
+		border none
+		border-radius 4px
+		outline none
+
+		&:hover
+			background rgba(255, 255, 255, .07)
+
+		&:active
+			background rgba(255, 255, 255, .09)
+
+		&_color
+			&_red
+				background #ef5350
+
+				&:hover
+					background darken(#ef5350, 5%)
+
+				&:active
+					background darken(#ef5350, 10%)
+
+	&__button-icon
+		width 24px
+		height 24px
+		fill currentColor
+
+	&__button-text
+		margin-left 8px
+
+	&__list
+		display flex
+		flex-wrap wrap
+		margin-top 8px
+
+	&__item
+		display flex
+		overflow hidden
+		align-items center
+		flex-direction column
+		width 80px
+		padding 4px 8px
+		cursor pointer
+		user-select none
+		border-radius 4px
+
+		&:hover
+			background rgba(255, 255, 255, .05)
+
+		&_type
+			&_file
+				& ^[0]__icon
+					fill #b4b4b4
+
+	&__icon
+		width 48px
+		height 48px
+		fill #404040
+
+	&__text
+		overflow hidden
+		width 100%
+		max-width 100%
+		text-align center
+		white-space nowrap
+		text-overflow ellipsis

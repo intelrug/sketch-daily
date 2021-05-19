@@ -23,5 +23,6 @@ module.exports = {
     'import/extensions': 'off',
     'vue/no-v-html': 'off',
     'no-plusplus': 'off',
+    'no-unused-expressions': 'off',
   },
 };
