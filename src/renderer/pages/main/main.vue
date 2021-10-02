@@ -7,7 +7,12 @@
       {{ currentSlide }} / {{ slidesCount }}
     </div>
     <div class="page-main__content" :style="{ bottom: timerStopped ? 0 : '32px' }">
-      <div v-if="!timerStopped" class="page-main__images-container">
+      <div
+        v-if="!timerStopped"
+        :class="
+          `page-main__images-container page-main__images-container_count_${currentImages.length}`
+        "
+      >
         <img
           v-for="(image, i) of currentImages"
           :key="i"
@@ -27,18 +32,17 @@
       <div v-if="timerStopped" class="page-main__start">
         <div class="page-main__settings">
           <div class="page-main__settings-field">
-            <label for="folder_select" class="page-main__settings-label">
-              Папка:
-            </label>
-            <div class="page-main__settings-content">
+            Выберите папки:
+          </div>
+          <div v-for="(_, i) of selectedFolders" :key="i" class="page-main__settings-field">
+            <div class="page-main__settings-content page-main__settings-content_width_full">
               <select
-                id="folder_select"
-                v-model="folder"
+                :id="`folder_select_${i}`"
+                v-model="selectedFolders[i]"
                 class="select select_width_full"
                 :disabled="folders.length === 0"
-                @change="changeFolder"
               >
-                <option v-if="folders.length === 0" :value="folder">Нет доступных папок</option>
+                <option v-if="folders.length === 0" value="">Нет доступных папок</option>
                 <option
                   v-for="folder of folders"
                   :key="folder.ino.toString()"
@@ -48,23 +52,22 @@
                 </option>
               </select>
             </div>
+            <b-button
+              class="page-main__add-picture"
+              icon="remove"
+              color="red"
+              :disabled="selectedFolders.length <= 1"
+              @click="removeSelectedFolder(i)"
+            />
           </div>
           <div class="page-main__settings-field">
-            <label for="pictures_count_select" class="page-main__settings-label">
-              Картинок в одном слайде:
-            </label>
-            <div class="page-main__settings-content">
-              <select
-                id="pictures_count_select"
-                v-model="picturesCount"
-                class="select select_width_full"
-                @change="setPicturesCount(picturesCount)"
-              >
-                <option v-for="option of picturesCountOptions" :key="option" :value="option">
-                  {{ option }}
-                </option>
-              </select>
-            </div>
+            <b-button
+              class="page-main__add-picture"
+              icon="add"
+              color="green"
+              :disabled="selectedFolders.length >= 4"
+              @click="addSelectedFolder"
+            />
           </div>
           <div class="page-main__settings-field">
             <div class="page-main__settings-content">
@@ -89,7 +92,7 @@
 </template>
 
 <script lang="ts">
-import { Action, Component, Getter, Mutation, State, Vue } from 'nuxt-property-decorator';
+import { Action, Component, Getter, Mutation, State, Vue, Watch } from 'nuxt-property-decorator';
 import { ActionMethod, MutationMethod } from 'vuex';
 import BSideMenu from '~/components/side-menu/side-menu.vue';
 import BButton from '~/components/button/button.vue';
@@ -106,7 +109,7 @@ import { Folder, RootState, TimerStatus } from '~/types/state';
 export default class MainPage extends Vue {
   @State((state: RootState) => state.images) imagesState!: string[];
   @State folders!: Folder[];
-  @State folderId!: bigint;
+  @State folderIds!: string[];
   @State((state: RootState) => state.picturesCount) picturesCountState!: number;
   @State((state: RootState) => state.randomizePictures)
   randomizePicturesState!: boolean;
@@ -117,19 +120,22 @@ export default class MainPage extends Vue {
   @Mutation setPicturesCount!: MutationMethod;
   @Mutation setRandomizePictures!: MutationMethod;
   @Action getImages!: ActionMethod;
-  @Action setFolderId!: ActionMethod;
+  @Action setFolderIds!: ActionMethod;
   @Action startTimer!: ActionMethod;
 
-  private folder: string = '';
+  private selectedFolders: string[] = [];
   private randomizePictures: boolean = true;
-  private picturesCountOptions: number[] = [1, 4];
-  private picturesCount: number = this.picturesCountOptions[0];
+
+  @Watch('selectedFolders')
+  onSelectedFoldersChange() {
+    // eslint-disable-next-line no-undef
+    this.setFolderIds(Array.from(this.selectedFolders));
+  }
 
   created() {
     this.getImages();
-    this.folder = this.folderId.toString();
-    this.picturesCount = this.picturesCountState;
     this.randomizePictures = this.randomizePicturesState;
+    this.selectedFolders = this.folderIds.length > 0 ? this.folderIds : [''];
   }
 
   get images() {
@@ -140,13 +146,16 @@ export default class MainPage extends Vue {
     return this.timerStatus === TimerStatus.stopped;
   }
 
-  changeFolder() {
-    // eslint-disable-next-line no-undef
-    this.setFolderId(BigInt(this.folder));
-  }
-
   start() {
     this.startTimer();
+  }
+
+  addSelectedFolder(): void {
+    this.selectedFolders.push('');
+  }
+
+  removeSelectedFolder(i: number): void {
+    this.selectedFolders.splice(i, 1);
   }
 }
 </script>

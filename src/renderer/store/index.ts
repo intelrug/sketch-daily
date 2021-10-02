@@ -1,9 +1,8 @@
 /* eslint-disable no-shadow */
-import { join } from 'path';
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex';
 import { Context } from '@nuxt/types';
 import { remote } from 'electron';
-import { ensureDirSync, ensureSymlinkSync, readdirSync, statSync, stat } from 'fs-extra';
+import { ensureDirSync, readdirSync, statSync } from 'fs-extra';
 import { Folder, RootState, TimerStatus } from '~/types/state';
 import Utils from '~/utils/utils';
 
@@ -15,7 +14,7 @@ export const state = (): RootState => ({
   myId: 0,
   path: '',
   folders: [],
-  folderId: 0n,
+  folderIds: [],
   imageId: 0,
   images: [],
   timer: 0,
@@ -28,13 +27,12 @@ export const state = (): RootState => ({
 
 export const getters: GetterTree<RootState, RootState> = {
   currentImages: (state) =>
-    state.images.slice(state.imageId, state.imageId + state.picturesCount) || [],
-  isLastImage: (state) => state.imageId >= state.images.length - (state.picturesCount * 2 - 1),
+    state.images.slice(state.imageId, state.imageId + state.folderIds.length) || [],
+  isLastImage: (state) => state.imageId >= state.images.length - (state.folderIds.length * 2 - 1),
   isFirstImage: (state) => state.imageId === 0,
-  currentSlide: (state) => state.imageId / state.picturesCount + 1,
-  slidesCount: (state) =>
-    Math.floor((state.images.length - (state.picturesCount * 2 - 1)) / state.picturesCount + 1),
-  folder: (state) => state.folders.find((f) => f.ino === state.folderId),
+  currentSlide: (state) => state.imageId / state.folderIds.length + 1,
+  slidesCount: (state) => state.images.length / state.folderIds.length,
+  folder: (state) => (id: string) => state.folders.find((f) => f.ino.toString() === id),
 };
 
 export const mutations: MutationTree<RootState> = {
@@ -46,14 +44,15 @@ export const mutations: MutationTree<RootState> = {
     state.path = path;
   },
   setFolders: (state, folders) => (state.folders = folders),
-  setFolderId: (state, folderId: bigint) => {
-    localStorage.setItem('folderId', folderId.toString());
-    state.folderId = folderId;
+  setFolderIds: (state, payload: string[]) => {
+    const filteredPayload = payload.filter((p) => p);
+    localStorage.setItem('folderIds', JSON.stringify(filteredPayload));
+    state.folderIds = filteredPayload;
   },
   setImages: (state, images: string[]) => (state.images = images),
   setImageId: (state, imageId: number) => (state.imageId = imageId),
-  incrementImageId: (state) => (state.imageId += state.picturesCount),
-  decrementImageId: (state) => (state.imageId -= state.picturesCount),
+  incrementImageId: (state) => (state.imageId += state.folderIds.length),
+  decrementImageId: (state) => (state.imageId -= state.folderIds.length),
   setTimerStatus: (state, status) => (state.timerStatus = status),
   setTimerInterval: (state, interval) => (state.timerInterval = interval),
   setTimerDefault: (state, value) => {
@@ -85,14 +84,19 @@ export const actions: Actions<RootState, RootState> = {
   nuxtClientInit({ commit, dispatch }) {
     const path = localStorage.getItem('path');
     const timerSeconds = localStorage.getItem('timerSeconds');
-    const folderId = localStorage.getItem('folderId');
+    const folderIds = localStorage.getItem('folderIds');
     const picturesCount = localStorage.getItem('picturesCount');
     const randomizePictures = localStorage.getItem('randomizePictures');
     if (path) commit('setPath', path);
     else commit('setPath', `${remote.app.getPath('documents')}\\${remote.app.getName()}`);
     if (timerSeconds) commit('setTimerDefault', Number(timerSeconds));
     // eslint-disable-next-line no-undef
-    if (folderId) commit('setFolderId', BigInt(folderId));
+    if (folderIds) {
+      const parsedFolderIds = JSON.parse(folderIds);
+      if (parsedFolderIds && Array.isArray(parsedFolderIds)) {
+        commit('setFolderIds', parsedFolderIds);
+      }
+    }
     if (picturesCount) commit('setPicturesCount', Number(picturesCount));
     if (randomizePictures) commit('setRandomizePictures', randomizePictures === 'true');
 
@@ -108,24 +112,56 @@ export const actions: Actions<RootState, RootState> = {
   },
 
   getImages({ state, commit, getters }, onstart = false) {
-    if (!getters.folder) {
-      commit('setImages', []);
-      return;
-    }
-
-    const dirPath = `${state.path}\\${getters.folder.path}`;
-    const dirContents = readdirSync(dirPath);
-    const files = dirContents.reduce<string[]>((acc, item) => {
-      const filePath = `${dirPath}\\${item}`;
-      const stat = statSync(filePath, { bigint: true });
-      if (stat.isFile()) acc.push(`${fileSystemPrefix}${filePath}`);
+    const unDuplicatedFoldersIds = [...new Set(state.folderIds)];
+    const dirPaths = unDuplicatedFoldersIds.reduce<string[]>((acc, id) => {
+      if (getters.folder(id)) {
+        acc.push(`${state.path}\\${getters.folder(id).path}`);
+      }
       return acc;
     }, []);
-    if (onstart && state.randomizePictures) commit('setImages', Utils.shuffle(files));
-    else commit('setImages', files);
+
+    const files: Record<string, string[]> = {};
+    dirPaths.forEach((dirPath, i) => {
+      const dirContents = readdirSync(dirPath);
+      files[unDuplicatedFoldersIds[i]] = dirContents.reduce<string[]>((acc, item) => {
+        const filePath = `${dirPath}\\${item}`;
+        const stat = statSync(filePath, { bigint: true });
+        if (stat.isFile()) acc.push(`${fileSystemPrefix}${filePath}`);
+        return acc;
+      }, []);
+    });
+
+    const filesArray: string[][] = [];
+    if (onstart && state.randomizePictures) {
+      state.folderIds.forEach((key) => {
+        filesArray.push(Utils.shuffle(files[key]));
+      });
+    } else {
+      state.folderIds.forEach((key) => {
+        filesArray.push(files[key]);
+      });
+    }
+
+    const slidesCount = state.folderIds.reduce<number>((acc, id) => {
+      if (files[id] && (files[id].length < acc || acc === 0)) {
+        return files[id].length;
+      }
+      return acc;
+    }, 0);
+
+    const images: string[] = [];
+    for (let i = 0; i < slidesCount; ++i) {
+      for (let j = 0; j < state.folderIds.length; ++j) {
+        if (filesArray[j]) {
+          images.push(filesArray[j][i]);
+        }
+      }
+    }
+
+    commit('setImages', images);
   },
 
-  getFolders({ state, commit, dispatch, getters }) {
+  getFolders({ state, commit }) {
     ensureDirSync(state.path);
     const items = readdirSync(state.path);
     const folders = items.reduce<Folder[]>((acc, item) => {
@@ -134,14 +170,10 @@ export const actions: Actions<RootState, RootState> = {
       return acc;
     }, []);
     commit('setFolders', folders);
-    if (!getters.folder) {
-      const folderId = state.folders[0]?.ino || 0;
-      dispatch('setFolderId', folderId);
-    }
   },
 
-  setFolderId({ commit, dispatch }, folderId) {
-    commit('setFolderId', folderId);
+  setFolderIds({ commit, dispatch }, payload: bigint[]) {
+    commit('setFolderIds', payload);
     dispatch('getImages');
   },
 

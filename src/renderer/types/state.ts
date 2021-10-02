@@ -5,7 +5,7 @@ export interface RootState {
   myId: number;
   path: string;
   folders: StatsBase<bigint>[];
-  folderId: bigint;
+  folderIds: string[];
   imageId: number;
   images: string[];
   timer: number;

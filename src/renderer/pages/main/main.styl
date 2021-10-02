@@ -51,27 +51,68 @@
 		display flex
 		overflow hidden
 		justify-content center
+		align-items center
 		flex-wrap wrap
 		height 100%
 		max-height 100%
 
+		&_count_1
+			& ^[0]__image
+				width 100%
+				height 100%
+				object-position center
+
+		&_count_2
+			& ^[0]__image
+				width 50%
+				height 100%
+				object-position center
+
+				&_number
+					&_1
+						object-position right center
+
+					&_2
+						object-position left center
+
+		&_count_3
+			& ^[0]__image
+				width 50%
+				height 50%
+				object-position center
+
+				&_number
+					&_1
+						object-position right bottom
+
+					&_2
+						object-position left bottom
+
+					&_3
+						width 100%
+						object-position center top
+
+		&_count_4
+			& ^[0]__image
+				width 50%
+				height 50%
+				object-position center
+
+				&_number
+					&_1
+						object-position right bottom
+
+					&_2
+						object-position left bottom
+
+					&_3
+						object-position right top
+
+					&_4
+						object-position left top
+
 	&__image
-		width 50%
-		height 50%
 		object-fit contain
-
-		&_number
-			&_1
-				object-position right bottom
-
-			&_2
-				object-position left bottom
-
-			&_3
-				object-position right top
-
-			&_4
-				object-position left top
 
 		&_size
 			&_full
@@ -121,6 +162,7 @@
 	&__settings
 		display flex
 		flex-direction column
+		min-width 200px
 		margin-bottom 24px
 
 	&__settings-field
@@ -132,9 +174,21 @@
 			margin-bottom 8px
 
 	&__settings-field
-		& > *:last-child
-			flex-grow 1
+		& > *:last-child:not(:first-child)
 			margin-left 12px
+
+		.select
+			padding 6px 8px
+
+		.button
+			padding 4px
+
+	&__settings-content
+		&_width_full
+			flex-grow 1
 
 	&__start-button
 		align-self flex-end
+
+	&__add-picture
+		margin 0 0 0 auto

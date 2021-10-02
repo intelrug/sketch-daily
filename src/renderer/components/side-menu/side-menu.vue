@@ -103,7 +103,6 @@ export default class SideMenu extends Vue {
   @Getter isFirstImage!: boolean;
   @Getter isLastImage!: boolean;
   @Mutation setTimerDefault!: MutationMethod;
-  @Action setFolderId!: ActionMethod;
   @Action startTimer!: ActionMethod;
   @Action pauseTimer!: ActionMethod;
   @Action stopTimer!: ActionMethod;
