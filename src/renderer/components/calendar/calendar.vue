@@ -86,20 +86,18 @@ export default class Calendar extends Vue {
   }
 
   isWeekDay(date) {
-    return this.isSameWeek(date, this.today) && date.getDay() >= 0 && date.getDay() <= 7;
+    return this.isSameWeek(date, this.today);
   }
 
-  isSameWeek(date1, date2) {
-    const clonedDate1 = new Date(date1);
-    const clonedDate2 = new Date(date2);
+  isSameWeek(dateToCheck, dateToday) {
+    const today = dateToday;
+    const currentWeekStartDate = new Date(today);
+    currentWeekStartDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));
 
-    clonedDate1.setHours(0, 0, 0, 0);
-    clonedDate2.setHours(0, 0, 0, 0);
+    const currentWeekEndDate = new Date(currentWeekStartDate);
+    currentWeekEndDate.setDate(currentWeekStartDate.getDate() + 6);
 
-    const differenceInDays = Math.abs(
-      (clonedDate2.getTime() - clonedDate1.getTime()) / (1000 * 60 * 60 * 24),
-    );
-    return clonedDate1 <= clonedDate2 && differenceInDays < 7;
+    return dateToCheck >= currentWeekStartDate && dateToCheck <= currentWeekEndDate;
   }
 
   // calculated props
