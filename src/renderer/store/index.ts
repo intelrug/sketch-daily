@@ -1,8 +1,8 @@
 /* eslint-disable no-shadow */
-import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex';
 import { Context } from '@nuxt/types';
 import { remote } from 'electron';
 import { ensureDirSync, readdirSync, statSync } from 'fs-extra';
+import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex';
 import { Folder, RootState, TimerStatus } from '~/types/state';
 import Utils from '~/utils/utils';
 
@@ -23,6 +23,9 @@ export const state = (): RootState => ({
   timerInterval: undefined,
   randomizePictures: true,
   picturesCount: 1,
+  completedDays: new Set(),
+  failedDays: new Set(),
+  today: new Date(),
 });
 
 export const getters: GetterTree<RootState, RootState> = {
@@ -72,6 +75,52 @@ export const mutations: MutationTree<RootState> = {
   },
   resetTimer: (state) => (state.timer = state.timerDefault),
   decrementTimer: (state) => (state.timer -= 1),
+
+  addCompletedDay(state, day) {
+    state.completedDays.add(day);
+    localStorage.setItem(
+      'completedDays',
+      Array.from(state.completedDays)
+        .map((day) => {
+          return day.getTime();
+        })
+        .join(','),
+    );
+  },
+  removeCompletedDay(state, day) {
+    for (const date of state.completedDays) {
+      if (date.getTime() === day.getTime()) {
+        state.completedDays.delete(date);
+        break;
+      }
+    }
+    localStorage.setItem(
+      'completedDays',
+      Array.from(state.completedDays)
+        .map((day) => {
+          return day.getTime();
+        })
+        .join(','),
+    );
+  },
+  setCompletedDays(state, days) {
+    state.completedDays! = new Set(
+      days.map((day) => {
+        return new Date(parseInt(day));
+      }),
+    );
+  },
+  setToday(state, day) {
+    state.today! = day;
+  },
+  moveBack(state) {
+    const newDate = new Date(state.today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    state.today = newDate;
+  },
+  moveForward(state) {
+    const newDate = new Date(state.today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    state.today = newDate;
+  },
 };
 
 interface Actions<S, R> extends ActionTree<S, R> {
@@ -87,6 +136,9 @@ export const actions: Actions<RootState, RootState> = {
     const folderIds = localStorage.getItem('folderIds');
     const picturesCount = localStorage.getItem('picturesCount');
     const randomizePictures = localStorage.getItem('randomizePictures');
+    const completedDays = localStorage.getItem('completedDays');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     if (path) commit('setPath', path);
     else commit('setPath', `${remote.app.getPath('documents')}\\${remote.app.getName()}`);
     if (timerSeconds) commit('setTimerDefault', Number(timerSeconds));
@@ -99,7 +151,9 @@ export const actions: Actions<RootState, RootState> = {
     }
     if (picturesCount) commit('setPicturesCount', Number(picturesCount));
     if (randomizePictures) commit('setRandomizePictures', randomizePictures === 'true');
+    if (completedDays) commit('setCompletedDays', completedDays.split(','));
 
+    commit('setToday', today);
     commit('resetTimer');
     dispatch('getFolders');
     setInterval(() => dispatch('getFolders'), 5000);
