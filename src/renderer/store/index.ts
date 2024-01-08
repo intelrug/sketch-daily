@@ -5,6 +5,7 @@ import { ensureDirSync, readdirSync, statSync } from 'fs-extra';
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex';
 import { Folder, RootState, TimerStatus } from '~/types/state';
 import Utils from '~/utils/utils';
+import * as NotificationsUtils from '~/utils/notifications';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const fileSystemPrefix = isProduction ? 'file:///' : 'http://sketchdaily.local/';
@@ -26,6 +27,9 @@ export const state = (): RootState => ({
   completedDays: new Set(),
   failedDays: new Set(),
   today: new Date(),
+  enableNotifications: false,
+  notificationTime: '00:00',
+  notificationText: '',
 });
 
 export const getters: GetterTree<RootState, RootState> = {
@@ -121,6 +125,31 @@ export const mutations: MutationTree<RootState> = {
     const newDate = new Date(state.today.getTime() + 7 * 24 * 60 * 60 * 1000);
     state.today = newDate;
   },
+  saveNotificationSettings(state) {
+    localStorage.setItem(
+      'notificationSettings',
+      JSON.stringify({
+        enableNotifications: state.enableNotifications,
+        notificationTime: state.notificationTime,
+        notificationText: state.notificationText,
+      }),
+    );
+  },
+  setNotificationSettings(state, notificationSettings) {
+    state.enableNotifications = notificationSettings.enableNotifications;
+    state.notificationTime = notificationSettings.notificationTime;
+    state.notificationText = notificationSettings.notificationText;
+  },
+  // create a setter methods for each state in NotificationSettings
+  setEnableNotifications(state, enableNotifications) {
+    state.enableNotifications = enableNotifications;
+  },
+  setNotificationTime(state, notificationTime) {
+    state.notificationTime = notificationTime;
+  },
+  setNotificationText(state, notificationText) {
+    state.notificationText = notificationText;
+  },
 };
 
 interface Actions<S, R> extends ActionTree<S, R> {
@@ -138,6 +167,19 @@ export const actions: Actions<RootState, RootState> = {
     const randomizePictures = localStorage.getItem('randomizePictures');
     const completedDays = localStorage.getItem('completedDays');
     const today = new Date();
+    // load notificationSettings into appropriate state variables
+    const notificationSettings = localStorage.getItem('notificationSettings');
+    if (notificationSettings) {
+      const ns = JSON.parse(notificationSettings);
+      commit('setNotificationSettings', notificationSettings);
+      NotificationsUtils.scheduleNotificationIfNeeded(
+        ns.enableNotifications,
+        ns.notificationText,
+        ns.notificationTime,
+        null,
+      );
+    }
+
     today.setHours(0, 0, 0, 0);
     if (path) commit('setPath', path);
     else commit('setPath', `${remote.app.getPath('documents')}\\${remote.app.getName()}`);

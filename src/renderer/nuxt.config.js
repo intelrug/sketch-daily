@@ -1,6 +1,7 @@
 // eslint-disable-next-line nuxt/no-cjs-in-config
 module.exports = {
   mode: 'spa',
+  ssr: false,
   /*
    ** Headers of the page
    */

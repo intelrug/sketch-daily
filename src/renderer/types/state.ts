@@ -17,6 +17,9 @@ export interface RootState {
   completedDays: Set<Date>;
   failedDays: Set<Date>;
   today: Date;
+  enableNotifications: boolean;
+  notificationTime: string;
+  notificationText: string;
 }
 
 export type Folder = StatsBase<bigint> & { path: string };
