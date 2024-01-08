@@ -78,7 +78,6 @@
         Сохранить
       </b-button>
     </div>
-    <calendar />
   </div>
   <!-- end .side-menu-->
 </template>
@@ -89,7 +88,6 @@ import { ActionMethod, MutationMethod } from 'vuex';
 import { toTimer } from '~/utils/filters';
 import { Folder, TimerStatus } from '~/types/state';
 import BButton from '~/components/button/button.vue';
-import Calendar from '~/components/Calendar/calendar.vue';
 
 @Component({
   name: 'b-side-menu',
