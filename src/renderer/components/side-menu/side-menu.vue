@@ -91,7 +91,7 @@ import BButton from '~/components/button/button.vue';
 
 @Component({
   name: 'b-side-menu',
-  components: { BButton, Calendar },
+  components: { BButton },
   filters: { toTimer },
 })
 export default class SideMenu extends Vue {
