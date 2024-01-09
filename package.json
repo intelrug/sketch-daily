@@ -70,6 +70,10 @@
     "webpack-node-externals": "1.7.2"
   },
   "dependencies": {
-    "electron-store": "^5.2.0"
+    "auto-launch": "^5.0.6",
+    "electron-store": "^5.2.0",
+    "node-notifier": "^10.0.1",
+    "node-schedule": "^2.1.1",
+    "prettier-plugin-stylus": "^0.1.0"
   }
 }

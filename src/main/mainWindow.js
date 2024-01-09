@@ -1,11 +1,12 @@
 import path from 'path';
 import Store from 'electron-store';
 import BrowserWinHandler from './BrowserWinHandler';
+import createTray from './tray';
+
 const isDev = process.env.NODE_ENV === 'development';
 
 const INDEX_PATH = path.join(__dirname, '..', 'renderer', 'index.html');
 const DEV_SERVER_URL = process.env.DEV_SERVER_URL;
-
 const store = new Store();
 
 function debounce(func, wait, immediate) {
@@ -96,9 +97,11 @@ const winHandler = new BrowserWinHandler({
   isMaximized: mainWindowStateKeeper.isMaximized,
   frame: false,
   backgroundColor: '#0d0d0d',
+
 });
 
 winHandler.onCreated((browserWindow) => {
+  createTray(browserWindow);
   mainWindowStateKeeper.track(browserWindow);
   if (isDev) browserWindow.loadURL(DEV_SERVER_URL);
   else browserWindow.loadFile(INDEX_PATH);

@@ -28,7 +28,9 @@ export default class AppHeader extends Vue {
   private win!: BrowserWindow | null;
 
   mounted() {
-    this.win = remote.BrowserWindow.getFocusedWindow();
+    this.win = remote.BrowserWindow.getFocusedWindow()
+      ? remote.BrowserWindow.getFocusedWindow()
+      : this.win;
   }
 
   close() {

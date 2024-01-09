@@ -3,6 +3,7 @@
     <div class="page-settings__field">
       <div class="page-settings__text">{{ path }}</div>
       <b-button @click="openSelectFolderDialog()">Select Folder</b-button>
+      <notifications-settings />
     </div>
   </div>
 </template>
@@ -11,11 +12,12 @@
 import { Action, Component, State, Vue } from 'nuxt-property-decorator';
 import { remote } from 'electron';
 import { ActionMethod } from 'vuex';
+import NotificationsSettings from '~/components/notifications/notifications.vue';
 import BExplorer from '~/components/explorer/explorer.vue';
 import BButton from '~/components/button/button.vue';
 
 @Component({
-  components: { BButton, BExplorer },
+  components: { BButton, BExplorer, NotificationsSettings },
 })
 export default class GalleryPage extends Vue {
   @State path!: string;

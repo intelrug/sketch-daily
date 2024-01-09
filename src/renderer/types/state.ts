@@ -14,6 +14,12 @@ export interface RootState {
   timerInterval: number | undefined;
   randomizePictures: boolean;
   picturesCount: number;
+  completedDays: Set<Date>;
+  failedDays: Set<Date>;
+  today: Date;
+  enableNotifications: boolean;
+  notificationTime: string;
+  notificationText: string;
 }
 
 export type Folder = StatsBase<bigint> & { path: string };

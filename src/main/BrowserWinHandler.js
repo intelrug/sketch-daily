@@ -1,5 +1,7 @@
 import { EventEmitter } from 'events';
+import path from 'path';
 import { BrowserWindow, app } from 'electron';
+import createTray from './tray';
 const isProduction = process.env.NODE_ENV === 'production';
 
 export default class BrowserWinHandler {
@@ -34,15 +36,17 @@ export default class BrowserWinHandler {
       ...this.options,
       webPreferences: {
         ...this.options.webPreferences,
+        preload: path.join(__dirname, 'preload.js'),
         webSecurity: false, // disable on dev to allow loading local resources
         allowRunningInsecureContent: true,
         nodeIntegration: true, // allow loading modules via the require () function
         devTools: !process.env.SPECTRON, // disable on e2e test environment
       },
     });
-    this.browserWindow.on('closed', () => {
-      // Dereference the window object
-      this.browserWindow = null;
+
+    this.browserWindow.on('close', (e) => {
+      e.preventDefault();
+      this.browserWindow.hide();
     });
     this._eventEmitter.emit('created');
   }

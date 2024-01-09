@@ -131,7 +131,6 @@ export default class MainPage extends Vue {
     // eslint-disable-next-line no-undef
     this.setFolderIds(Array.from(this.selectedFolders));
   }
-
   created() {
     this.getImages();
     this.randomizePictures = this.randomizePicturesState;
